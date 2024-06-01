@@ -1,42 +1,45 @@
 const notes = require("../data/notes-data");
 
-  function getNoteById(noteId) {
-    return notes.find(note => note.id === Number(noteId));
-  }
+function getNoteById(noteId) {
+  return notes.find((note) => note.id === Number(noteId));
+}
 
-  
-  function updateNoteById(noteId, updatedText) {
-    const noteIndex = notes.findIndex(note => note.id === Number(noteId));
-    if (noteIndex !== -1) {
-      notes[noteIndex].text = updatedText;
-      return notes[noteIndex];
-    }
-    return null;
+function updateNoteById(noteId, updatedText) {
+  const noteIndex = notes.findIndex((note) => note.id === Number(noteId));
+  if (noteIndex !== -1) {
+    notes[noteIndex].text = updatedText;
+    return notes[noteIndex];
   }
-  
-  function deleteNoteById(noteId) {
-    const noteIndex = notes.findIndex(note => note.id === Number(noteId));
-    if (noteIndex !== -1) {
-      return notes.splice(noteIndex, 1);
-    }
-    return null;
-  }
+  return null;
+}
 
-function list(req, res) {
-  res.json(notes);
+function deleteNoteById(noteId) {
+  const noteIndex = notes.findIndex((note) => note.id === Number(noteId));
+  if (noteIndex !== -1) {
+    return notes.splice(noteIndex, 1);
+  }
+  return null;
+}
+
+function list(_, res) {
+    return res.json({data:notes});
 }
 
 function create(req, res) {
-  const { text } = req.body.data;
+  const data = req.body.data;
+  if (!data) {
+    return res.status(400).json({ error: "Data is required" });
+  }
+  const text = data.text;
   if (!text) {
     return res.status(400).json({ error: "Text is required" });
   }
   const newNote = {
-    id: getNotes().length + 1,
+    id: notes.length + 1,
     text,
   };
   notes.push(newNote);
-  res.status(201).json(newNote);
+  res.status(201).json({ data: newNote });
 }
 
 function read(req, res) {
@@ -44,18 +47,24 @@ function read(req, res) {
   if (!note) {
     return res.status(404).json({ error: "Note not found" });
   }
-  res.json(note);
+  res.json({ data: note });
 }
 
 function update(req, res) {
-  const { text } = req.body;
+  const data = req.body.data;
+  if (!data) {
+    return res.status(400).json({ error: "Data is required" });
+  }
+  const text = data.text;
   if (!text) {
     return res.status(400).json({ error: "Text is required" });
   }
-  const updateNote = updateNoteById(req.params.noteId, text);
+
+  const updatedNote = updateNoteById(req.params.noteId, text);
   if (!updatedNote) {
     return res.status(404).json({ error: "Note not found" });
   }
+  return res.json({ data:updatedNote });
 }
 
 function destroy(req, res) {
